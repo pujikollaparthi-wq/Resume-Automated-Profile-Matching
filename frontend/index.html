@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Automated Profile Matching - Intelligent ATS Resume Screener</title>
+  <meta name="description" content="AI-powered application to analyze resumes and job descriptions using NLP, TF-IDF cosine similarity, and automated candidate-profile skill matching.">
+  <link rel="stylesheet" href="/static/index.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366F1'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-wrapper">
+      <div class="brand" id="brandLogo" onclick="switchView('home')">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>MatchAI</h1>
+          <span class="brand-tag">ATS Profile Matcher</span>
+        </div>
+      </div>
+
+      <ul class="nav-links">
+        <li><button class="nav-item-btn active" id="navHome" onclick="switchView('home')">Home</button></li>
+        <li><button class="nav-item-btn" id="navMatcher" onclick="switchView('matcher')">Candidate Matcher</button></li>
+        <li><button class="nav-item-btn" id="navRecruiter" onclick="switchView('recruiter')">Batch Screening</button></li>
+        <li><button class="nav-item-btn" id="navAdmin" onclick="switchView('admin')">Admin Dashboard</button></li>
+        <li><button class="nav-item-btn" id="navSkills" onclick="switchView('skills')">Skill Taxonomy</button></li>
+        <li><button class="nav-item-btn" id="navGuide" onclick="switchView('guide')">Interview Guide</button></li>
+      </ul>
+
+      <div class="nav-actions" id="authActions">
+        <!-- Injected via app.js depending on login state -->
+        <button class="btn btn-secondary btn-sm" onclick="openAuthModal('login')">Sign In</button>
+        <button class="btn btn-primary btn-sm" onclick="openAuthModal('register')">Register</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SVG Gradients Definition -->
+  <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="dialGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#06B6D4" />
+        <stop offset="50%" stop-color="#6366F1" />
+        <stop offset="100%" stop-color="#10B981" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <main class="container">
+
+    <!-- ==================== VIEW 1: HOME PAGE ==================== -->
+    <section id="viewHome" class="app-view">
+      <div class="hero-section">
+        <div class="hero-pill">
+          <span class="pulse-dot"></span>
+          AI & NLP Automated Resume Screening Platform
+        </div>
+        <h2 class="hero-title">
+          Automated Profile Matching <br>
+          <span class="hero-gradient-text">Powered by AI & NLP</span>
+        </h2>
+        <p class="hero-subtitle">
+          Analyze candidate resumes and job descriptions using TF-IDF vectorization, Cosine Similarity, and 400+ domain skill extraction to optimize ATS screening and rank top applicants with precision.
+        </p>
+
+        <div class="hero-cta-group">
+          <button class="btn btn-primary btn-lg" onclick="switchView('matcher')">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            Match Resume Now
+          </button>
+          <button class="btn btn-secondary btn-lg" onclick="switchView('recruiter')">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            Recruiter Batch Ranking
+          </button>
+          <button class="btn btn-outline btn-lg" onclick="switchView('admin')">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Admin Dashboard
+          </button>
+        </div>
+
+        <!-- Banner Statistics -->
+        <div class="stats-banner">
+          <div class="stat-item">
+            <div class="stat-val">98.5<span>%</span></div>
+            <div class="stat-label">Information Extraction Accuracy</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">400<span>+</span></div>
+            <div class="stat-label">Taxonomy Domain Skills</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">&lt; 0.4<span>s</span></div>
+            <div class="stat-label">Sub-Second Vector Scoring</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">PDF/DOCX</div>
+            <div class="stat-label">Multi-Format Document Parsing</div>
+          </div>
+        </div>
+
+        <!-- How It Works Architecture Visual -->
+        <div class="card" style="text-align: left; margin-bottom: 40px;">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">How the Automated AI Profile Matcher Works</h3>
+              <p class="card-subtitle">End-to-End NLP pipeline from document parsing to candidate ranking</p>
+            </div>
+            <span class="user-role-tag">NLP PIPELINE</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 12px;">
+            <div style="background: rgba(255,255,255,0.02); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+              <div style="color: var(--accent-cyan); font-weight: 800; font-size: 1.2rem; margin-bottom: 6px;">01. Parse</div>
+              <p style="font-size: 0.86rem; color: var(--text-muted);">Extracts clean text from PDF, DOCX, or text inputs with character normalization and entity detection.</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+              <div style="color: var(--primary); font-weight: 800; font-size: 1.2rem; margin-bottom: 6px;">02. Extract</div>
+              <p style="font-size: 0.86rem; color: var(--text-muted);">Identifies technical & soft skills from a 400+ skill taxonomy using boundary-aware regex NER.</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+              <div style="color: var(--accent-violet); font-weight: 800; font-size: 1.2rem; margin-bottom: 6px;">03. Vectorize</div>
+              <p style="font-size: 0.86rem; color: var(--text-muted);">Computes n-gram TF-IDF document vectors and calculates Cosine Similarity between Resume and JD.</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+              <div style="color: var(--accent-emerald); font-weight: 800; font-size: 1.2rem; margin-bottom: 6px;">04. Rank & Screen</div>
+              <p style="font-size: 0.86rem; color: var(--text-muted);">Synthesizes weighted match score, flags missing skill gaps, and recommends resume enhancements.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: CANDIDATE MATCHER WORKSPACE ==================== -->
+    <section id="viewMatcher" class="app-view" style="display: none;">
+      <div style="margin: 28px 0 20px;">
+        <h2 style="font-size: 1.8rem; font-weight: 800;">Candidate Resume & Job Profile Matcher</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Upload or paste your resume and compare against target job descriptions to analyze match percentage, identify missing skill gaps, and receive AI optimization advice.</p>
+      </div>
+
+      <div class="matcher-grid">
+        <!-- Left Pane: Resume Input -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              Candidate Resume
+            </h3>
+            <span style="font-size: 0.76rem; color: var(--accent-cyan); font-weight: 600;">STEP 1</span>
+          </div>
+
+          <!-- Quick Sample Resumes -->
+          <div class="form-group">
+            <label class="form-label">Instant Demo Resumes:</label>
+            <div class="presets-bar" id="sampleResumesBar">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- File Upload Zone -->
+          <div class="form-group">
+            <label class="form-label">Upload Resume Document (PDF / DOCX / TXT):</label>
+            <div class="dropzone" id="resumeDropzone" onclick="document.getElementById('resumeFileInput').click()">
+              <input type="file" id="resumeFileInput" accept=".pdf,.docx,.doc,.txt" style="display:none;" onchange="handleResumeFileSelected(this)">
+              <svg class="dropzone-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              <div class="dropzone-text">Click to browse or Drag & Drop resume file</div>
+              <div class="dropzone-hint">Supports PDF, DOCX, Word, or plain text formats</div>
+              <div id="fileSelectedBadge" style="display: none;" class="file-selected-badge">
+                <span id="selectedFileName">resume.pdf</span>
+                <span style="cursor: pointer; margin-left: 6px;" onclick="clearSelectedFile(event)">&times;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Or Paste Text -->
+          <div class="form-group">
+            <label class="form-label">Or Paste Resume Content Directly:</label>
+            <textarea id="resumeTextInput" class="form-control" placeholder="Paste your resume text here (Summary, Skills, Experience, Education)..."></textarea>
+          </div>
+        </div>
+
+        <!-- Right Pane: Job Description Input -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              Target Job Description
+            </h3>
+            <span style="font-size: 0.76rem; color: var(--accent-emerald); font-weight: 600;">STEP 2</span>
+          </div>
+
+          <!-- Quick Sample Jobs -->
+          <div class="form-group">
+            <label class="form-label">Select Active Job Opening:</label>
+            <div class="presets-bar" id="sampleJobsBar">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Job Title / Role:</label>
+            <input type="text" id="targetJobTitle" class="form-control" placeholder="e.g. Senior Machine Learning Engineer">
+          </div>
+
+          <!-- Paste Job Description -->
+          <div class="form-group">
+            <label class="form-label">Job Description & Requirements:</label>
+            <textarea id="jobTextInput" class="form-control" placeholder="Paste target job description and responsibilities here..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div style="text-align: center; margin: 10px 0 30px;">
+        <button id="btnRunMatch" class="btn btn-primary btn-lg" onclick="triggerProfileMatching()">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Analyze & Match Profile with AI
+        </button>
+      </div>
+
+      <!-- Match Results Dashboard -->
+      <div id="matchResultsArea" class="results-wrapper" style="display: none;">
+        
+        <!-- Overall Match Banner -->
+        <div class="match-overview-card">
+          <!-- Circular Dial -->
+          <div class="score-dial-box">
+            <div class="circular-dial">
+              <svg viewBox="0 0 100 100">
+                <circle class="dial-bg" cx="50" cy="50" r="42" />
+                <circle id="dialProgressCircle" class="dial-progress" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89" />
+              </svg>
+              <div class="dial-center-text">
+                <div class="dial-number" id="dialScoreValue">0<span>%</span></div>
+                <div class="dial-caption">Match Score</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Highlights -->
+          <div class="candidate-summary-details">
+            <div class="verdict-header">
+              <span id="verdictBadge" class="verdict-badge badge-success">Strong Match</span>
+              <span id="atsStatusBadge" class="verdict-badge" style="background: rgba(255,255,255,0.08); color: #fff;">ATS: PASSED</span>
+              <button class="btn btn-secondary btn-sm" style="margin-left: auto;" onclick="printEvaluationReport()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Print / Export Report
+              </button>
+            </div>
+
+            <h3 id="resCandidateName" style="font-size: 1.5rem; font-weight: 800; color: #fff;">Candidate</h3>
+            <p id="resJobTitle" style="color: var(--accent-cyan); font-weight: 600; font-size: 0.95rem;">Target Position</p>
+
+            <!-- Mini Metrics Grid -->
+            <div class="mini-metrics-grid">
+              <div class="mini-metric-pill">
+                <div class="mini-metric-title">Skill Match Coverage</div>
+                <div class="mini-metric-value" id="valSkillScore">0%</div>
+              </div>
+              <div class="mini-metric-pill">
+                <div class="mini-metric-title">TF-IDF Cosine Similarity</div>
+                <div class="mini-metric-value" id="valTfidfScore">0%</div>
+              </div>
+              <div class="mini-metric-pill">
+                <div class="mini-metric-title">Detected Experience</div>
+                <div class="mini-metric-value" id="valExperience">0 Years</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills Breakdown: Matched vs Missing -->
+        <div class="skills-comparison-grid">
+          <!-- Matched Skills -->
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title" style="color: var(--accent-emerald);">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Matched Skills (<span id="matchedSkillsCount">0</span>)
+              </h4>
+              <span style="font-size: 0.74rem; color: var(--text-dim);">Present in both Resume & JD</span>
+            </div>
+            <div class="skill-tag-container" id="matchedSkillsList">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- Missing Skills -->
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title" style="color: var(--accent-rose);">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Missing Critical Skills (<span id="missingSkillsCount">0</span>)
+              </h4>
+              <span style="font-size: 0.74rem; color: var(--text-dim);">Required by JD, absent in Resume</span>
+            </div>
+            <div class="skill-tag-container" id="missingSkillsList">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Candidate Strengths & AI Recommendations -->
+        <div class="skills-comparison-grid">
+          <!-- Bonus Strengths -->
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title" style="color: var(--accent-violet);">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                Additional Candidate Strengths (<span id="bonusSkillsCount">0</span>)
+              </h4>
+              <span style="font-size: 0.74rem; color: var(--text-dim);">Valuable skills outside core JD</span>
+            </div>
+            <div class="skill-tag-container" id="bonusSkillsList">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- AI Optimization Recommendations -->
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title" style="color: var(--accent-cyan);">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                AI Resume Optimization Advice
+              </h4>
+              <span style="font-size: 0.74rem; color: var(--text-dim);">Actionable ATS enhancements</span>
+            </div>
+            <ul class="recommendations-list" id="aiRecommendationsList">
+              <!-- Injected by JS -->
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: RECRUITER BATCH SCREENING ==================== -->
+    <section id="viewRecruiter" class="app-view" style="display: none;">
+      <div style="margin: 28px 0 20px;">
+        <h2 style="font-size: 1.8rem; font-weight: 800;">Recruiter Candidate Ranking Leaderboard</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Batch screen multiple applicant resumes against a single job requisition. The NLP engine scores each applicant and outputs an instant ranked candidate leaderboard.</p>
+      </div>
+
+      <div class="card" style="margin-bottom: 28px;">
+        <div class="card-header">
+          <h3 class="card-title">Batch Requisition Setup</h3>
+          <span class="user-role-tag">RECRUITER SUITE</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+            <label class="form-label">Select Requisition Job Role:</label>
+            <select id="batchJobSelect" class="form-control" onchange="handleBatchJobChange(this.value)">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Applicant Pool Source:</label>
+            <div style="display: flex; gap: 10px; margin-top: 4px;">
+              <button class="btn btn-secondary btn-sm" onclick="setBatchCandidateMode('presets')">Use Sample Candidates (Alex, Priya, Marcus, Jordan)</button>
+              <button class="btn btn-secondary btn-sm" onclick="document.getElementById('batchResumeFiles').click()">Upload Multiple Resumes</button>
+              <input type="file" id="batchResumeFiles" multiple accept=".pdf,.docx,.doc,.txt" style="display:none;" onchange="handleBatchFilesSelected(this)">
+            </div>
+            <div id="batchFilesLabel" style="font-size: 0.8rem; color: var(--accent-cyan); margin-top: 8px;">Selected: 4 Diverse Sample Candidates Pool</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; text-align: right;">
+          <button class="btn btn-primary btn-lg" onclick="triggerBatchScreening()">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            Run Batch Screening & Rank Applicants
+          </button>
+        </div>
+      </div>
+
+      <!-- Leaderboard Output -->
+      <div class="card" id="batchLeaderboardCard" style="display: none;">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Applicant Screening Leaderboard</h3>
+            <p class="card-subtitle" id="batchTargetJobLabel">Role: Senior Machine Learning Engineer</p>
+          </div>
+          <span id="batchCountBadge" class="verdict-badge badge-info">4 Candidates Evaluated</span>
+        </div>
+
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">Rank</th>
+              <th>Candidate Name & Title</th>
+              <th>Match Score</th>
+              <th>Skills Overlap</th>
+              <th>Verdict</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="batchLeaderboardBody">
+            <!-- Injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 4: ADMIN DASHBOARD ==================== -->
+    <section id="viewAdmin" class="app-view" style="display: none;">
+      <div style="margin: 28px 0 20px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <h2 style="font-size: 1.8rem; font-weight: 800;">ATS Executive Admin Dashboard</h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">System analytics, overall match distributions, active jobs management, and historical ATS evaluation records.</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openNewJobModal()">+ Post New Job Opening</button>
+      </div>
+
+      <!-- Admin KPI Row -->
+      <div class="stats-banner" style="margin-bottom: 28px;">
+        <div class="stat-item">
+          <div class="stat-val" id="adminTotalEvals">0</div>
+          <div class="stat-label">Total Resumes Screened</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="adminAvgScore">0<span>%</span></div>
+          <div class="stat-label">Average Match Score</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="adminTotalUsers">0</div>
+          <div class="stat-label">Registered Accounts</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="adminTotalJobs">0</div>
+          <div class="stat-label">Active Job Openings</div>
+        </div>
+      </div>
+
+      <!-- In-Demand Skills & Job Postings Grid -->
+      <div class="skills-comparison-grid">
+        <!-- Top Skills In Demand -->
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Top In-Demand Technical Skills</h4>
+            <span style="font-size: 0.74rem; color: var(--accent-cyan);">Frequency Across Openings</span>
+          </div>
+          <div id="adminTopSkillsList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+
+        <!-- Active Jobs Management -->
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Active Job Requisitions</h4>
+            <span style="font-size: 0.74rem; color: var(--text-dim);">Live Database</span>
+          </div>
+          <div id="adminJobsList" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px; max-height: 380px; overflow-y: auto;">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Evaluations History Table -->
+      <div class="card" style="margin-top: 28px;">
+        <div class="card-header">
+          <h4 class="card-title">Recent Candidate Evaluation Audits</h4>
+          <span style="font-size: 0.74rem; color: var(--text-muted);">Real-time Activity Log</span>
+        </div>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Candidate Name</th>
+              <th>Job Requisition</th>
+              <th>Overall Match</th>
+              <th>Verdict</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="adminRecentEvalsBody">
+            <!-- Injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 5: SKILL TAXONOMY EXPLORER ==================== -->
+    <section id="viewSkills" class="app-view" style="display: none;">
+      <div style="margin: 28px 0 20px;">
+        <h2 style="font-size: 1.8rem; font-weight: 800;">Domain Skill Taxonomy Explorer</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Browse the 400+ domain skills categorized across Programming Languages, Web Frameworks, Cloud & DevOps, Machine Learning, Databases, and Soft Skills.</p>
+      </div>
+
+      <div class="card" style="margin-bottom: 24px;">
+        <input type="text" id="taxonomySearchInput" class="form-control" placeholder="Search skills (e.g. PyTorch, React, Docker, Kubernetes)..." oninput="filterTaxonomySkills(this.value)">
+      </div>
+
+      <div id="taxonomyContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px;">
+        <!-- Injected by JS -->
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 6: INTERVIEW GUIDE & TECH CHEATSHEET ==================== -->
+    <section id="viewGuide" class="app-view" style="display: none;">
+      <div style="margin: 28px 0 20px;">
+        <h2 style="font-size: 1.8rem; font-weight: 800;">Project Architecture & Interview Q&A Cheatsheet</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Prepare to explain this exact project in technical interviews. Review the core NLP concepts, math formulas, and architectural decisions.</p>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-card">
+          <div class="faq-q">
+            <span>❓</span> What is the core problem this project solves?
+          </div>
+          <div class="faq-a">
+            Traditional resume screening is manual, slow, and prone to human bias. This AI application automates the candidate screening process by parsing resumes (PDF/DOCX), extracting skills using NLP, vectorizing text using TF-IDF, and scoring profile relevance against job descriptions in sub-second time.
+          </div>
+        </div>
+
+        <div class="faq-card">
+          <div class="faq-q">
+            <span>❓</span> How does TF-IDF & Cosine Similarity work?
+          </div>
+          <div class="faq-a">
+            <strong>TF-IDF (Term Frequency-Inverse Document Frequency)</strong> reflects how important a word is to a document relative to the corpus.
+            <div class="code-snippet">Cosine Similarity = (A • B) / (||A|| * ||B||)</div>
+            It calculates the cosine of the angle between the multi-dimensional vector representations of the resume and the job description, measuring semantic lexical closeness regardless of document length.
+          </div>
+        </div>
+
+        <div class="faq-card">
+          <div class="faq-q">
+            <span>❓</span> How is Skill Extraction implemented?
+          </div>
+          <div class="faq-a">
+            We use a curated domain taxonomy of 400+ technical, cloud, AI, and soft skills with word-boundary regular expressions and n-gram matching (e.g. handling multi-word terms like "Natural Language Processing" or special symbols like "C++" and "CI/CD").
+          </div>
+        </div>
+
+        <div class="faq-card">
+          <div class="faq-q">
+            <span>❓</span> How is the Overall Match Score calculated?
+          </div>
+          <div class="faq-a">
+            We use a multi-factor weighted scoring formula:
+            <div class="code-snippet">Score = (Skill_Match * 0.50) + (TFIDF_Score * 0.40) + (Experience * 0.10)</div>
+            This ensures that candidates with the right required technical skills and domain context receive top rankings, while highlighting missing skill gaps.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== AUTH MODAL (LOGIN / REGISTER) ==================== -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeAuthModal()">&times;</button>
+      
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab-btn" id="tabBtnRegister" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="formLogin" onsubmit="handleLoginSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Username:</label>
+          <input type="text" id="loginUsername" class="form-control" placeholder="e.g. admin or candidate" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password:</label>
+          <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Sign In to MatchAI</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="formRegister" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name:</label>
+          <input type="text" id="regFullName" class="form-control" placeholder="e.g. Alex Morgan" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username:</label>
+          <input type="text" id="regUsername" class="form-control" placeholder="e.g. alexm" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address:</label>
+          <input type="email" id="regEmail" class="form-control" placeholder="alex@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password:</label>
+          <input type="password" id="regPassword" class="form-control" placeholder="••••••••" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Role:</label>
+          <select id="regRole" class="form-control">
+            <option value="candidate">Candidate (Job Seeker)</option>
+            <option value="recruiter">Recruiter (Talent Screener)</option>
+            <option value="admin">System Administrator</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Register Account</button>
+      </form>
+
+      <!-- Quick 1-Click Demo Accounts -->
+      <div class="demo-accounts-box">
+        <div class="demo-title">1-Click Instant Demo Login:</div>
+        <div class="demo-btn-group">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="quickFillLogin('candidate', 'candidate123')">Candidate</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="quickFillLogin('recruiter', 'recruiter123')">Recruiter</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="quickFillLogin('admin', 'admin123')">Admin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== POST JOB MODAL ==================== -->
+  <div class="modal-overlay" id="newJobModal">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeNewJobModal()">&times;</button>
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px;">Post New Job Requisition</h3>
+
+      <form id="formNewJob" onsubmit="handleCreateJobSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Job Title:</label>
+          <input type="text" id="newJobTitle" class="form-control" placeholder="e.g. Senior Machine Learning Engineer" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company Name:</label>
+          <input type="text" id="newJobCompany" class="form-control" placeholder="e.g. DeepLogic AI" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Department:</label>
+          <input type="text" id="newJobDept" class="form-control" placeholder="e.g. Engineering / AI" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Experience Required:</label>
+          <input type="text" id="newJobExp" class="form-control" placeholder="e.g. 3-5 years" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Required Skills (comma separated):</label>
+          <input type="text" id="newJobSkills" class="form-control" placeholder="Python, PyTorch, Docker, AWS, NLP" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Description & Responsibilities:</label>
+          <textarea id="newJobDesc" class="form-control" rows="5" placeholder="Detailed job requirements..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Job Opening</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Candidate Detailed Audit Modal (From Recruiter Leaderboard) -->
+  <div class="modal-overlay" id="candidateAuditModal">
+    <div class="modal-content" style="max-width: 720px;">
+      <button class="modal-close-btn" onclick="closeCandidateAuditModal()">&times;</button>
+      <div id="auditModalBody">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
